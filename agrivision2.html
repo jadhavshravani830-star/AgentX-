@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriVision - AI Crop Health & Disease Management Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js for Interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0b0f0e',
+                        cardbg: '#121816',
+                        brandgreen: '#10b981',
+                        accentglow: '#059669',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkbg text-gray-100 font-sans antialiased min-h-screen flex flex-col justify-between" x-data="{ currentTab: 'home', scanned: false, lang: 'en', activeScanCrop: 'cotton' }">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="border-b border-gray-800 bg-cardbg/85 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" @click="currentTab = 'home'">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brandgreen to-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-900/40">
+                    <i class="fa-solid fa-seedling text-darkbg font-bold text-lg"></i>
+                </div>
+                <span class="text-xl font-bold tracking-wide bg-gradient-to-r from-emerald-400 to-teal-200 bg-clip-text text-transparent">AgriVision</span>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-gray-400">
+                <button @click="currentTab = 'home'" :class="currentTab === 'home' ? 'text-brandgreen border-b-2 border-brandgreen pb-1' : 'hover:text-white transition'">Home</button>
+                <button @click="currentTab = 'scan'" :class="currentTab === 'scan' ? 'text-brandgreen border-b-2 border-brandgreen pb-1' : 'hover:text-white transition'">Scan Crop</button>
+                <button @click="currentTab = 'dashboard'" :class="currentTab === 'dashboard' ? 'text-brandgreen border-b-2 border-brandgreen pb-1' : 'hover:text-white transition'">Dashboard</button>
+                <button @click="currentTab = 'garden'" :class="currentTab === 'garden' ? 'text-brandgreen border-b-2 border-brandgreen pb-1' : 'hover:text-white transition'">My Fields</button>
+                <button @click="currentTab = 'weather'" :class="currentTab === 'weather' ? 'text-brandgreen border-b-2 border-brandgreen pb-1' : 'hover:text-white transition'">Weather & Soil</button>
+                <button @click="currentTab = 'calendar'" :class="currentTab === 'calendar' ? 'text-brandgreen border-b-2 border-brandgreen pb-1' : 'hover:text-white transition'">Care Calendar</button>
+            </nav>
+
+            <!-- Right Controls -->
+            <div class="flex items-center space-x-4">
+                <button @click="lang = lang === 'en' ? 'hi' : 'en'" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-700 font-semibold transition">
+                    <span x-text="lang === 'en' ? '🇮🇳 हिंदी' : '🇺🇸 English'"></span>
+                </button>
+                <div class="flex items-center space-x-2 bg-gray-800/60 px-3 py-1.5 rounded-full border border-gray-700 cursor-pointer" @click="currentTab = 'dashboard'">
+                    <div class="w-6 h-6 rounded-full bg-brandgreen text-darkbg font-bold flex items-center justify-center text-xs">RK</div>
+                    <span class="text-xs font-semibold text-gray-200">Ramesh Kisan</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- HOME VIEW -->
+        <section x-show="currentTab === 'home'" class="space-y-12">
+            <div class="text-center space-y-4 py-8">
+                <div class="inline-flex items-center space-x-2 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1 rounded-full text-emerald-400 text-xs font-medium tracking-wide">
+                    <i class="fa-solid fa-microchip"></i>
+                    <span x-text="lang === 'en' ? 'AI-POWERED CROP HEALTH & DISEASE MANAGEMENT' : 'एआई-संचालित फसल स्वास्थ्य और रोग प्रबंधन'"></span>
+                </div>
+                <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white max-w-3xl mx-auto leading-tight" x-text="lang === 'en' ? 'Smart Decision Support for Modern Farmers' : 'आधुनिक किसानों के लिए स्मार्ट निर्णय सहायता'"></h1>
+                <p class="text-gray-400 max-w-xl mx-auto text-base sm:text-lg" x-text="lang === 'en' ? 'Early Detection → Diagnosis → Severity Assessment → Treatment → Prevention → Continuous Monitoring using mobile crop photos.' : 'मोबाइल फोटो के माध्यम से शुरुआती पहचान, निदान, और उपचार मार्गदर्शन।'"></p>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                    <button @click="currentTab = 'scan'" class="w-full sm:w-auto bg-brandgreen hover:bg-emerald-600 text-darkbg font-bold px-8 py-3.5 rounded-xl flex items-center justify-center space-x-2 shadow-lg shadow-emerald-900/30 transition">
+                        <i class="fa-solid fa-camera-retro"></i>
+                        <span x-text="lang === 'en' ? 'Scan Crop Photo' : 'फसल की फोटो स्कैन करें'"></span>
+                    </button>
+                    <button @click="currentTab = 'calendar'" class="w-full sm:w-auto bg-gray-800 hover:bg-gray-700 text-white font-semibold px-8 py-3.5 rounded-xl border border-gray-700 flex items-center justify-center space-x-2 transition">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        <span x-text="lang === 'en' ? 'View Care Schedule' : 'देखभाल अनुसूची देखें'"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Custom User Infected Plant Images Selection Grid -->
+            <div class="space-y-4">
+                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider text-center">Select Your Uploaded Infected Plant Sample to Test AI Scanner</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Sample 1: Snapshot Leaf Condition -->
+                    <div @click="activeScanCrop = 'cotton'; scanned = true; currentTab = 'scan';" class="bg-cardbg border border-gray-800 rounded-2xl overflow-hidden cursor-pointer hover:border-amber-500 transition group">
+                        <div class="h-48 overflow-hidden relative bg-black">
+                            <img src="Snapshot_59-300x169.webp" alt="Snapshot Leaf Condition" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <div class="absolute top-3 left-3 bg-amber-950/90 text-amber-400 text-xs px-2.5 py-1 rounded-md font-bold backdrop-blur border border-amber-800">Sample: Powdery Mildew</div>
+                        </div>
+                        <div class="p-4 space-y-1">
+                            <h4 class="font-bold text-white text-lg">Cotton Leaf Inspection</h4>
+                            <p class="text-xs text-gray-400">Examine fungal spore patches and discoloration.</p>
+                        </div>
+                    </div>
+
+                    <!-- Sample 2: Black Leaf Spot -->
+                    <div @click="activeScanCrop = 'wheat'; scanned = true; currentTab = 'scan';" class="bg-cardbg border border-gray-800 rounded-2xl overflow-hidden cursor-pointer hover:border-amber-500 transition group">
+                        <div class="h-48 overflow-hidden relative bg-black">
+                            <img src="black-leaf-spot-hibiscus-leaf-attacked-disease-showing-black-leaf-spots-as-symptoms-211155319.webp" alt="Black Leaf Spot Attack" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <div class="absolute top-3 left-3 bg-red-950/90 text-red-400 text-xs px-2.5 py-1 rounded-md font-bold backdrop-blur border border-red-800">Sample: Black Leaf Spot</div>
+                        </div>
+                        <div class="p-4 space-y-1">
+                            <h4 class="font-bold text-white text-lg">Necrotic Lesion Scan</h4>
+                            <p class="text-xs text-gray-400">Analyze advanced tissue necrosis and black spot severity.</p>
+                        </div>
+                    </div>
+
+                    <!-- Sample 3: Overwatering Damage -->
+                    <div @click="activeScanCrop = 'corn'; scanned = true; currentTab = 'scan';" class="bg-cardbg border border-gray-800 rounded-2xl overflow-hidden cursor-pointer hover:border-amber-500 transition group">
+                        <div class="h-48 overflow-hidden relative bg-black">
+                            <img src="monstera-deliciosa-overwatering.webp" alt="Plant Overwatering Damage" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <div class="absolute top-3 left-3 bg-amber-950/90 text-amber-400 text-xs px-2.5 py-1 rounded-md font-bold backdrop-blur border border-amber-800">Sample: Root Stress</div>
+                        </div>
+                        <div class="p-4 space-y-1">
+                            <h4 class="font-bold text-white text-lg">Soil Moisture & Chlorosis</h4>
+                            <p class="text-xs text-gray-400">Inspect yellowing patterns caused by excessive watering.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Highlights -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-gray-800 pt-8 text-center">
+                <div>
+                    <div class="text-2xl sm:text-3xl font-extrabold text-brandgreen">Early Detection</div>
+                    <div class="text-xs text-gray-400 mt-1">STOP DAMAGE BEFORE SPREAD</div>
+                </div>
+                <div>
+                    <div class="text-2xl sm:text-3xl font-extrabold text-brandgreen">Soil & Weather</div>
+                    <div class="text-xs text-gray-400 mt-1">CONTEXT-AWARE INSIGHTS</div>
+                </div>
+                <div>
+                    <div class="text-2xl sm:text-3xl font-extrabold text-brandgreen">Expert Treatment</div>
+                    <div class="text-xs text-gray-400 mt-1">ACTIONABLE GUIDANCE</div>
+                </div>
+                <div>
+                    <div class="text-2xl sm:text-3xl font-extrabold text-brandgreen">Offline Ready</div>
+                    <div class="text-xs text-gray-400 mt-1">RURAL CONNECTIVITY SUPPORT</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCAN & DIAGNOSIS VIEW -->
+        <section x-show="currentTab === 'scan'" class="space-y-8">
+            <div class="text-center space-y-2">
+                <h2 class="text-3xl font-bold text-white">AI Crop Health Scanner</h2>
+                <p class="text-gray-400 text-sm">Analyze uploaded plant images with visible agricultural symptoms for immediate disease diagnosis.</p>
+            </div>
+
+            <!-- Upload box before scan -->
+            <div x-show="!scanned" class="max-w-xl mx-auto bg-cardbg border border-dashed border-gray-700 rounded-2xl p-10 text-center space-y-4">
+                <div class="w-16 h-16 bg-emerald-950 text-brandgreen rounded-full flex items-center justify-center mx-auto text-2xl">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <div>
+                    <p class="font-semibold text-white">Upload Your Plant Image</p>
+                    <p class="text-xs text-gray-400 mt-1">Using custom infected sample images for AI analysis</p>
+                </div>
+                <button @click="scanned = true; activeScanCrop = 'cotton';" class="bg-brandgreen text-darkbg font-bold px-6 py-2.5 rounded-xl hover:bg-emerald-600 transition">
+                    Run AI Analysis
+                </button>
+            </div>
+
+            <!-- Scan Results Card with Contextual Image -->
+            <div x-show="scanned" class="space-y-6 max-w-4xl mx-auto bg-cardbg border border-gray-800 p-6 rounded-2xl">
+                <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+                    <div>
+                        <span class="text-xs text-brandgreen font-semibold uppercase tracking-wider">AI Deep Learning Diagnostics & Severity Assessment</span>
+                        <h3 class="text-2xl font-bold text-white mt-1">
+                            <span x-text="activeScanCrop === 'cotton' ? 'Bt Cotton Plot Leaf Analysis' : (activeScanCrop === 'wheat' ? 'Black Leaf Spot Inspection' : 'Overwatered Crop Analysis')"></span>
+                        </h3>
+                    </div>
+                    <button @click="scanned = false" class="text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300">Scan Another Image</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <!-- Contextual Scanned Image Preview -->
+                    <div class="bg-gray-900 rounded-xl p-2 border border-gray-800 relative overflow-hidden h-64 flex items-center justify-center bg-black">
+                        <img :src="activeScanCrop === 'cotton' ? 'Snapshot_59-300x169.webp' : (activeScanCrop === 'wheat' ? 'black-leaf-spot-hibiscus-leaf-attacked-disease-showing-black-leaf-spots-as-symptoms-211155319.webp' : 'monstera-deliciosa-overwatering.webp')" alt="Scanned Plant Leaf" class="w-full h-full object-cover rounded-lg">
+                        <div class="absolute bottom-4 left-4 bg-darkbg/90 px-3 py-1.5 rounded-lg border border-gray-700 text-xs font-semibold text-amber-400 flex items-center space-x-2">
+                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                            <span x-text="activeScanCrop === 'cotton' ? 'Diagnosis: Mildew Spores Detected (Moderate)' : (activeScanCrop === 'wheat' ? 'Diagnosis: Black Leaf Spot Blight (High Severity)' : 'Diagnosis: Root Stress & Chlorosis')"></span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-emerald-950/40 border border-emerald-900/60 p-4 rounded-xl space-y-2">
+                            <h4 class="font-semibold text-brandgreen text-sm flex items-center space-x-2">
+                                <i class="fa-solid fa-prescription-bottle-medical"></i>
+                                <span>Actionable Treatment Guidance</span>
+                            </h4>
+                            <p class="text-xs text-gray-300" x-text="activeScanCrop === 'cotton' ? 'Apply sulfur-based bio-fungicide spray during cool morning hours. Ensure proper plant spacing for airflow.' : (activeScanCrop === 'wheat' ? 'Remove severely infected leaves immediately and apply copper oxychloride spray to halt lesion spread.' : 'Reduce irrigation frequency immediately. Aerate topsoil to restore root oxygen flow.')"></p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button @click="currentTab = 'dashboard'" class="flex-1 bg-brandgreen text-darkbg font-bold py-2.5 rounded-xl text-sm hover:bg-emerald-600 transition text-center">
+                                Open Dashboard & AI Expert
+                            </button>
+                            <button @click="currentTab = 'calendar'" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2.5 rounded-xl text-sm border border-gray-700">
+                                Set Reminder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD VIEW -->
+        <section x-show="currentTab === 'dashboard'" class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Farmer Decision Support Dashboard</h2>
+                    <p class="text-xs text-emerald-400 flex items-center space-x-1.5 mt-1">
+                        <span class="w-2 h-2 rounded-full bg-brandgreen animate-pulse"></span>
+                        <span>AgriVision AI Core active — Monitoring active scanned samples</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid with Scanned Image Context -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Scanned Plant Quick View Card -->
+                <div class="bg-cardbg border border-gray-800 rounded-2xl p-5 space-y-4 md:col-span-1">
+                    <div class="text-xs text-brandgreen font-semibold uppercase">Latest Scanned Plant Context</div>
+                    <div class="h-36 rounded-xl overflow-hidden relative border border-amber-800/60 bg-black">
+                        <img src="Snapshot_59-300x169.webp" alt="Active Scan Context" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 left-2 bg-darkbg/90 text-amber-400 text-[10px] px-2 py-0.5 rounded font-bold">Active Spore Alert</div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white">Plot #2 Sample Inspection</h4>
+                        <p class="text-xs text-gray-400 mt-0.5">Health Score: <strong class="text-amber-400">68% (Needs Treatment)</strong></p>
+                    </div>
+                </div>
+
+                <!-- AI Expert Assistant Chat Box -->
+                <div class="bg-cardbg border border-gray-800 rounded-2xl p-6 space-y-4 md:col-span-2 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="text-xs font-semibold text-gray-400 uppercase">Agronomist AI Chatbot</div>
+                        <div class="bg-gray-900/80 border border-gray-800 p-4 rounded-xl text-sm space-y-2">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-7 h-7 rounded-full bg-brandgreen text-darkbg font-bold flex items-center justify-center text-xs shrink-0">AI</div>
+                                <p class="text-xs text-gray-300">Hello Ramesh! Based on the scanned plant image and high ambient humidity (78%), your crop shows active fungal progression. Would you like me to schedule a treatment reminder on your Care Calendar?</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <input type="text" placeholder="Ask about fertilizer, pesticides, or weather risk..." class="flex-grow bg-gray-900 border border-gray-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-brandgreen">
+                        <button class="bg-brandgreen text-darkbg font-bold px-4 py-2 rounded-xl text-xs hover:bg-emerald-600 transition">Send</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MY FIELDS VIEW -->
+        <section x-show="currentTab === 'garden'" class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">My Fields & Plant Health Monitoring</h2>
+                    <p class="text-xs text-gray-400">Continuous plant lifecycle tracking using your uploaded image records.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Field 1 -->
+                <div class="bg-cardbg border border-gray-800 rounded-2xl overflow-hidden space-y-4 p-4">
+                    <div class="h-40 bg-gray-800 rounded-xl relative overflow-hidden bg-black">
+                        <img src="Snapshot_59-300x169.webp" alt="Field 1" class="w-full h-full object-cover">
+                        <div class="absolute top-2 left-2 bg-amber-950/90 text-amber-400 text-xs px-2.5 py-1 rounded-md font-bold border border-amber-800">68% Health</div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-lg">Plot A: Leaf Sample</h3>
+                        <p class="text-xs text-gray-400">Status: Mildew Spore Warning</p>
+                    </div>
+                    <div class="flex justify-between text-xs border-t border-gray-800 pt-3 text-gray-400">
+                        <span>SOIL: <strong class="text-brandgreen">Loamy</strong></span>
+                        <span>RISK: <strong class="text-amber-400">Moderate</strong></span>
+                    </div>
+                </div>
+
+                <!-- Field 2 -->
+                <div class="bg-cardbg border border-gray-800 rounded-2xl overflow-hidden space-y-4 p-4">
+                    <div class="h-40 bg-gray-800 rounded-xl relative overflow-hidden bg-black">
+                        <img src="black-leaf-spot-hibiscus-leaf-attacked-disease-showing-black-leaf-spots-as-symptoms-211155319.webp" alt="Field 2" class="w-full h-full object-cover">
+                        <div class="absolute top-2 left-2 bg-red-950/90 text-red-400 text-xs px-2.5 py-1 rounded-md font-bold border border-red-800">54% Health</div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-lg">Plot B: Black Spot Area</h3>
+                        <p class="text-xs text-gray-400">Status: Active Necrotic Spread</p>
+                    </div>
+                    <div class="flex justify-between text-xs border-t border-gray-800 pt-3 text-gray-400">
+                        <span>SOIL: <strong class="text-brandgreen">Alluvial</strong></span>
+                        <span>RISK: <strong class="text-red-400">High</strong></span>
+                    </div>
+                </div>
+
+                <!-- Field 3 -->
+                <div class="bg-cardbg border border-gray-800 rounded-2xl overflow-hidden space-y-4 p-4">
+                    <div class="h-40 bg-gray-800 rounded-xl relative overflow-hidden bg-black">
+                        <img src="monstera-deliciosa-overwatering.webp" alt="Field 3" class="w-full h-full object-cover">
+                        <div class="absolute top-2 left-2 bg-amber-950/90 text-amber-400 text-xs px-2.5 py-1 rounded-md font-bold border border-amber-800">62% Health</div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-lg">Plot C: Greenhouse Section</h3>
+                        <p class="text-xs text-gray-400">Status: Overwatering Stress</p>
+                    </div>
+                    <div class="flex justify-between text-xs border-t border-gray-800 pt-3 text-gray-400">
+                        <span>SOIL: <strong class="text-brandgreen">Potting Mix</strong></span>
+                        <span>RISK: <strong class="text-amber-400">Moderate</strong></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- WEATHER & SOIL INTEL VIEW -->
+        <section x-show="currentTab === 'weather'" class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Weather & Soil Conditions Intelligence</h2>
+                    <p class="text-xs text-gray-400">Real-time microclimate analysis to prevent disease risks.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-cardbg border border-gray-800 p-6 rounded-2xl space-y-4 md:col-span-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-semibold text-brandgreen">Local Farm Weather Station</span>
+                        <span class="text-xs text-gray-400">Synced via Satellite</span>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <div class="text-5xl font-extrabold text-white">31°C</div>
+                        <div>
+                            <div class="text-lg font-semibold text-gray-200">High Humidity (78%)</div>
+                            <p class="text-xs text-gray-400">Increased risk of fungal spore spread matching your uploaded plant sample symptoms.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-cardbg border border-gray-800 p-6 rounded-2xl space-y-3">
+                    <h3 class="font-bold text-white text-sm">Soil Parameters</h3>
+                    <ul class="space-y-2 text-xs text-gray-300">
+                        <li class="flex justify-between border-b border-gray-800 pb-2">
+                            <span>Soil Moisture:</span>
+                            <strong class="text-amber-400">High (Overwatered)</strong>
+                        </li>
+                        <li class="flex justify-between border-b border-gray-800 pb-2">
+                            <span>Soil pH Level:</span>
+                            <strong class="text-brandgreen">6.8 (Neutral)</strong>
+                        </li>
+                        <li class="flex justify-between">
+                            <span>Nitrogen (N-P-K):</span>
+                            <strong class="text-amber-400">Medium Deficit</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARE CALENDAR & NOTIFICATIONS VIEW -->
+        <section x-show="currentTab === 'calendar'" class="space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Care Calendar & Smart Notifications</h2>
+                    <p class="text-xs text-gray-400">Automated reminders for pesticide application, watering adjustments, and treatments.</p>
+                </div>
+                <button class="bg-brandgreen text-darkbg text-xs font-bold px-4 py-2 rounded-xl hover:bg-emerald-600 transition">
+                    + Add Custom Reminder
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Upcoming Alerts List -->
+                <div class="bg-cardbg border border-gray-800 p-6 rounded-2xl space-y-4 md:col-span-2">
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-wider">Scheduled Farm Notifications</h3>
+                    <div class="space-y-3">
+                        <div class="bg-gray-900 border border-gray-800 p-4 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-950 text-brandgreen flex items-center justify-center font-bold text-lg">
+                                    <i class="fa-solid fa-spray-can-sparkles"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white text-sm">Fungicide Spray for Spore Prevention</div>
+                                    <p class="text-xs text-gray-400">Tomorrow at 7:00 AM — Treat leaf spot and mildew symptoms.</p>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-emerald-950 text-brandgreen px-2.5 py-1 rounded-full font-semibold">Scheduled</span>
+                        </div>
+
+                        <div class="bg-gray-900 border border-gray-800 p-4 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-lg bg-amber-950 text-amber-400 flex items-center justify-center font-bold text-lg">
+                                    <i class="fa-solid fa-droplet-slash"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white text-sm">Pause Watering (Overwatered Plot)</div>
+                                    <p class="text-xs text-gray-400">In 2 days — Allow root soil to dry out completely.</p>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-amber-950 text-amber-400 px-2.5 py-1 rounded-full font-semibold">Alert Set</span>
+                        </div>
+
+                        <div class="bg-gray-900 border border-gray-800 p-4 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-950 text-brandgreen flex items-center justify-center font-bold text-lg">
+                                    <i class="fa-solid fa-seedling"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white text-sm">Nutrient Supplement Application</div>
+                                    <p class="text-xs text-gray-400">In 4 days — Soil recovery phase.</p>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-gray-800 text-gray-300 px-2.5 py-1 rounded-full font-semibold">Upcoming</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Widget Summary -->
+                <div class="bg-cardbg border border-gray-800 p-6 rounded-2xl space-y-4">
+                    <h3 class="text-sm font-semibold text-white uppercase tracking-wider">September 2026</h3>
+                    <div class="grid grid-cols-7 gap-2 text-center text-xs text-gray-400">
+                        <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                        <div class="py-1.5 text-gray-600">27</div><div class="py-1.5 text-gray-600">28</div><div class="py-1.5 text-gray-600">29</div><div class="py-1.5 text-gray-600">30</div><div class="py-1.5 text-white bg-gray-800 rounded">1</div><div class="py-1.5 text-white">2</div><div class="py-1.5 text-white">3</div>
+                        <div class="py-1.5 text-white">4</div><div class="py-1.5 text-white">5</div><div class="py-1.5 text-white bg-brandgreen text-darkbg font-bold rounded-full">6</div><div class="py-1.5 text-white">7</div><div class="py-1.5 text-white">8</div><div class="py-1.5 text-white">9</div><div class="py-1.5 text-white">10</div>
+                        <div class="py-1.5 text-white">11</div><div class="py-1.5 text-white">12</div><div class="py-1.5 text-white">13</div><div class="py-1.5 text-white">14</div><div class="py-1.5 text-white">15</div><div class="py-1.5 text-brandgreen font-bold">16</div><div class="py-1.5 text-white">17</div>
+                    </div>
+                    <p class="text-xs text-gray-400 text-center pt-2">Notifications active via SMS & Push.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-gray-800 bg-cardbg/40 py-4 text-center text-xs text-gray-500">
+        AgriVision Crop Health Monitoring Platform &copy; 2026. All rights reserved.
+    </footer>
+
+</body>
+</html>
